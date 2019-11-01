@@ -22,6 +22,7 @@ public class SwiftFlutterImageUtilsPlugin: NSObject, FlutterPlugin {
                 let width = args["width"] as! CGFloat
                 let height = args["height"] as! CGFloat
                 let quality = args["quality"] as! Int
+                let format = args["format"] as! Int
                 
                 let data = bytes.data
                 
@@ -31,10 +32,11 @@ public class SwiftFlutterImageUtilsPlugin: NSObject, FlutterPlugin {
                     y: y,
                     width: width,
                     height: height,
-                    quality: quality
-                    ) else {
-                        result(nil)
-                        return
+                    quality: quality,
+                    format: format
+                ) else {
+                    result(nil)
+                    return
                 }
                 
                 result(FlutterStandardTypedData(bytes: croppedData))
@@ -44,17 +46,19 @@ public class SwiftFlutterImageUtilsPlugin: NSObject, FlutterPlugin {
                 let destWidth = args["destWidth"] as! CGFloat
                 let destHeight = args["destHeight"] as! CGFloat
                 let quality = args["quality"] as! Int
-                
+                let format = args["format"] as! Int
+
                 let data = bytes.data
                 
                 guard let resizedData = ImageUtils.resize(
                     with: data,
                     destWidth: destWidth,
                     destHeight: destHeight,
-                    quality: quality
-                    ) else {
-                        result(nil)
-                        return
+                    quality: quality,
+                    format: format
+                ) else {
+                    result(nil)
+                    return
                 }
                 
                 result(FlutterStandardTypedData(bytes: resizedData))
@@ -63,16 +67,18 @@ public class SwiftFlutterImageUtilsPlugin: NSObject, FlutterPlugin {
                 let bytes = args["bytes"] as! FlutterStandardTypedData
                 let maxSize = args["maxSize"] as! CGFloat
                 let quality = args["quality"] as! Int
-                
+                let format = args["format"] as! Int
+
                 let data = bytes.data
                 
                 guard let resizedData = ImageUtils.resizeToMax(
                     with: data,
                     maxSize: maxSize,
-                    quality: quality
-                    ) else {
-                        result(nil)
-                        return
+                    quality: quality,
+                    format: format
+                ) else {
+                    result(nil)
+                    return
                 }
                 
                 result(FlutterStandardTypedData(bytes: resizedData))
@@ -81,16 +87,18 @@ public class SwiftFlutterImageUtilsPlugin: NSObject, FlutterPlugin {
                 let bytes = args["bytes"] as! FlutterStandardTypedData
                 let angle = args["angle"] as! Int
                 let quality = args["quality"] as! Int
-                
+                let format = args["format"] as! Int
+
                 let data = bytes.data
                 
                 guard let rotatedData = ImageUtils.rotate(
                     with: data,
                     angle: angle,
-                    quality: quality
-                    ) else {
-                        result(nil)
-                        return
+                    quality: quality,
+                    format: format
+                ) else {
+                    result(nil)
+                    return
                 }
                 
                 result(FlutterStandardTypedData(bytes: rotatedData))

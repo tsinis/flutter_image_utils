@@ -9,7 +9,7 @@ import Foundation
 import CoreGraphics
 
 class ImageUtils {
-    public static func crop(with data: Data, x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, quality: Int) -> Data? {
+    public static func crop(with data: Data, x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, quality: Int, format: Int) -> Data? {
         guard let img = UIImage(data: data) else { return nil }
         
         let rect = CGRect(x: x, y: y, width: width, height: height)
@@ -18,12 +18,10 @@ class ImageUtils {
         guard let croppedRef = ref.cropping(to: rect) else { return nil }
         
         let croppedImg = UIImage(cgImage: croppedRef)
-        let result = croppedImg.jpegData(compressionQuality: CGFloat(quality) / 100)
-        
-        return result
+        return uiImageToData(image: croppedImg, format: format, quality: quality)
     }
     
-    public static func resize(with data: Data, destWidth: CGFloat, destHeight: CGFloat, quality: Int) -> Data? {
+    public static func resize(with data: Data, destWidth: CGFloat, destHeight: CGFloat, quality: Int, format: Int) -> Data? {
         guard let img = UIImage(data: data) else { return nil }
         
         let widthRatio = destWidth  / img.size.width
@@ -44,12 +42,10 @@ class ImageUtils {
         let resizedImg = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        let result = resizedImg!.jpegData(compressionQuality: CGFloat(quality) / 100)
-        
-        return result
+        return uiImageToData(image: resizedImg!, format: format, quality: quality)
     }
     
-    public static func resizeToMax(with data: Data, maxSize: CGFloat, quality: Int) -> Data? {
+    public static func resizeToMax(with data: Data, maxSize: CGFloat, quality: Int, format: Int) -> Data? {
         guard let img = UIImage(data: data) else { return nil }
         
         var nextWidth = CGFloat(maxSize)
@@ -61,10 +57,10 @@ class ImageUtils {
             nextWidth = img.size.width * CGFloat(maxSize) / img.size.height;
         }
         
-        return ImageUtils.resize(with: data, destWidth: nextWidth, destHeight: nextHeight, quality: quality)
+        return ImageUtils.resize(with: data, destWidth: nextWidth, destHeight: nextHeight, quality: quality, format: format)
     }
     
-    public static func rotate(with data: Data, angle: Int, quality: Int) -> Data? {
+    public static func rotate(with data: Data, angle: Int, quality: Int, format: Int) -> Data? {
         guard let img = UIImage(data: data) else { return nil }
         
         let radians = CGFloat(angle) * .pi / 180
@@ -87,7 +83,17 @@ class ImageUtils {
         let rotatedImg = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        let result = rotatedImg!.jpegData(compressionQuality: CGFloat(quality) / 100)
+        return uiImageToData(image: rotatedImg!, format: format, quality: quality)
+    }
+    
+    private static func uiImageToData(image: UIImage, format: Int, quality: Int) -> Data? {
+        var result: Data?
+        
+        if format == 0 { // jpeg
+            result = image.jpegData(compressionQuality: CGFloat(quality) / 100)
+        } else { // png
+            result = image.pngData()
+        }
         
         return result
     }

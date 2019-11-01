@@ -1,6 +1,16 @@
+## 1.0.0
+
+* Added output format param (jpeg or png)
+* Bugfixes 
+
+## 0.2.0
+
+* AndroidX support
+* Flutter 1.7 support
+
 ## 0.1.0+3
 
-  * removed all `flutter_image_crop` and `FlutterImageCrop` occurences
+* removed all `flutter_image_crop` and `FlutterImageCrop` occurences
 
 ## 0.1.0+2
 

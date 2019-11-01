@@ -4,7 +4,11 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
 class FlutterImageUtils {
-  static const MethodChannel _channel = const MethodChannel('flutter_image_utils');
+  static const jpeg = 0;
+  static const png = 1;
+
+  static const MethodChannel _channel =
+      const MethodChannel('flutter_image_utils');
 
   /// Returns `Future<Uint8List>` that contains bytes of cropped image.
   ///
@@ -20,6 +24,10 @@ class FlutterImageUtils {
   ///
   /// `quality` param controls the quality of the output image. Must be
   /// positive number between `0` and `100`.
+  ///
+  /// `format` param controls output image format. Must be either 0 (jpeg) or 1 (png).
+  /// Default is 0. Must not be null.
+  /// You can also use `FlutterImageUtils.jpeg` and `FlutterImageUtils.png` for this
   ///
   /// ```dart
   /// import 'dart:typed_data';
@@ -42,6 +50,7 @@ class FlutterImageUtils {
     int width,
     int height,
     int quality = 95,
+    int format = FlutterImageUtils.jpeg,
   }) async {
     assert(image != null, 'image must not be null');
 
@@ -56,6 +65,10 @@ class FlutterImageUtils {
     assert(width >= 0, 'width must be positive or equal to zero');
     assert(height >= 0, 'height must be positive or equal to zero');
     assert(quality >= 0, 'quality must be positive or equal to zero');
+
+    assert(format != null, 'format must not be null');
+    assert(format == 0 || format == 1,
+        'format must be either 0 (jpeg) or 1 (png)');
 
     if (image == null) {
       return Uint8List(0);
@@ -72,6 +85,7 @@ class FlutterImageUtils {
       'width': width,
       'height': height,
       'quality': quality,
+      'format': format
     });
 
     if (result == null || result.isEmpty) {
@@ -91,6 +105,10 @@ class FlutterImageUtils {
   /// `quality` param controls the quality of the output image. Must be
   /// positive number between `0` and `100`.
   ///
+  /// `format` param controls output image format. Must be either 0 (jpeg) or 1 (png).
+  /// Default is 0. Must not be null.
+  /// You can also use `FlutterImageUtils.jpeg` and `FlutterImageUtils.png` for this
+  ///
   /// ```dart
   /// import 'dart:typed_data';
   /// /* ... */
@@ -106,6 +124,7 @@ class FlutterImageUtils {
     List<int> image, {
     int maxSize,
     int quality = 95,
+    int format = FlutterImageUtils.jpeg,
   }) async {
     assert(image != null, 'image must not be null');
 
@@ -114,6 +133,10 @@ class FlutterImageUtils {
 
     assert(maxSize >= 0, 'maxSize must be positive or equal to zero');
     assert(quality >= 0, 'quality must be positive or equal to zero');
+
+    assert(format != null, 'format must not be null');
+    assert(format == 0 || format == 1,
+        'format must be either 0 (jpeg) or 1 (png)');
 
     if (image == null) {
       return Uint8List(0);
@@ -127,6 +150,7 @@ class FlutterImageUtils {
       'bytes': Uint8List.fromList(image),
       'maxSize': maxSize,
       'quality': quality,
+      'format': format,
     });
 
     if (result == null || result.isEmpty) {
@@ -143,6 +167,10 @@ class FlutterImageUtils {
   ///
   /// `quality` param controls the quality of the output image. Must be
   /// positive number between `0` and `100`.
+  ///
+  /// `format` param controls output image format. Must be either 0 (jpeg) or 1 (png).
+  /// Default is 0. Must not be null.
+  /// You can also use `FlutterImageUtils.jpeg` and `FlutterImageUtils.png` for this
   ///
   /// ```dart
   /// import 'dart:typed_data';
@@ -161,6 +189,7 @@ class FlutterImageUtils {
     int destWidth,
     int destHeight,
     int quality = 95,
+    int format = FlutterImageUtils.jpeg,
   }) async {
     assert(image != null, 'image must not be null');
 
@@ -171,6 +200,10 @@ class FlutterImageUtils {
     assert(destWidth >= 0, 'destWidth must be positive or equal to zero');
     assert(destHeight >= 0, 'destHeight must be positive or equal to zero');
     assert(quality >= 0, 'quality must be positive or equal to zero');
+
+    assert(format != null, 'format must not be null');
+    assert(format == 0 || format == 1,
+        'format must be either 0 (jpeg) or 1 (png)');
 
     if (image == null) {
       return Uint8List(0);
@@ -185,6 +218,7 @@ class FlutterImageUtils {
       'destWidth': destWidth,
       'destHeight': destHeight,
       'quality': quality,
+      'format': format
     });
 
     if (result == null || result.isEmpty) {
@@ -202,6 +236,10 @@ class FlutterImageUtils {
   /// `quality` param controls the quality of the output image. Must be
   /// positive number between `0` and `100`.
   ///
+  /// `format` param controls output image format. Must be either 0 (jpeg) or 1 (png).
+  /// Default is 0. Must not be null.
+  /// You can also use `FlutterImageUtils.jpeg` and `FlutterImageUtils.png` for this
+  ///
   /// ```dart
   /// import 'dart:typed_data';
   /// /* ... */
@@ -217,6 +255,7 @@ class FlutterImageUtils {
     List<int> image, {
     int angle,
     int quality = 95,
+    int format = FlutterImageUtils.jpeg,
   }) async {
     assert(image != null, 'image must not be null');
 
@@ -224,6 +263,10 @@ class FlutterImageUtils {
     assert(quality != null, 'quality must not be null');
 
     assert(quality >= 0, 'quality must be positive or equal to zero');
+
+    assert(format != null, 'format must not be null');
+    assert(format == 0 || format == 1,
+        'format must be either 0 (jpeg) or 1 (png)');
 
     if (image == null) {
       return Uint8List(0);
@@ -237,6 +280,7 @@ class FlutterImageUtils {
       'bytes': Uint8List.fromList(image),
       'angle': angle,
       'quality': quality,
+      'format': format
     });
 
     if (result == null || result.isEmpty) {

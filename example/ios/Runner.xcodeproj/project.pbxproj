@@ -263,7 +263,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh",
-				"${PODS_ROOT}/../.symlinks/flutter/ios-release/Flutter.framework",
+				"${PODS_ROOT}/../.symlinks/flutter/ios/Flutter.framework",
 				"${BUILT_PRODUCTS_DIR}/flutter_image_utils/flutter_image_utils.framework",
 				"${BUILT_PRODUCTS_DIR}/image_picker/image_picker.framework",
 			);

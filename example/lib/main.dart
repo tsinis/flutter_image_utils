@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Uint8List _imgBytes;
-  Uint8List _croppedBytes;
+  Uint8List _processedBytes;
   int _x = 0;
   int _y = 0;
   int _dw = 0;
@@ -24,9 +24,10 @@ class _MyAppState extends State<MyApp> {
   int _sw = 0;
   int _sh = 0;
   int _quality = 100;
+  int _format = FlutterImageUtils.jpeg;
 
-  bool _isCropping = false;
-  int _cropTime;
+  bool _isProcessing = false;
+  int _processTime;
 
   Future<void> _pickImage(ImageSource source) async {
     final file = await ImagePicker.pickImage(source: source);
@@ -42,40 +43,46 @@ class _MyAppState extends State<MyApp> {
     final completer = Completer<ImageInfo>();
     final stream = provider.resolve(ImageConfiguration());
 
-    void listener(ImageInfo info, bool syncCall) => completer.complete(info);
-
     void errorListener(dynamic exception, StackTrace stackTrace) {
       completer.complete(null);
-      FlutterError.reportError(new FlutterErrorDetails(
-        context: 'image load failed ',
-        library: 'flutter_image_utils',
-        exception: exception,
-        stack: stackTrace,
-        silent: true,
-      ));
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          context: DiagnosticsNode.message('image load failed'),
+          library: 'flutter_image_utils',
+          exception: exception,
+          stack: stackTrace,
+          silent: true,
+        ),
+      );
     }
 
-    stream.addListener(listener, onError: errorListener);
+    final listener = ImageStreamListener(
+      (info, _) => completer.complete(info),
+      onError: errorListener,
+    );
+
+    stream.addListener(listener);
     final info = await completer.future;
     stream.removeListener(listener);
 
     setState(() {
-      _cropTime = null;
+      _processTime = null;
       _imgBytes = uint8Bytes;
-      _croppedBytes = uint8Bytes;
+      _processedBytes = uint8Bytes;
       _x = 0;
       _y = 0;
       _sw = info.image.width;
       _sh = info.image.height;
       _dw = _sw;
       _dh = _sh;
+      _format = FlutterImageUtils.jpeg;
     });
   }
 
   Future<void> _crop() async {
     setState(() {
-      _cropTime = null;
-      _isCropping = true;
+      _processTime = null;
+      _isProcessing = true;
     });
 
     final stopwatch = Stopwatch()..start();
@@ -86,15 +93,76 @@ class _MyAppState extends State<MyApp> {
       width: _dw,
       height: _dh,
       quality: _quality,
+      format: _format,
     );
 
     setState(() {
-      _cropTime = stopwatch.elapsedMilliseconds;
-      _croppedBytes = cropped;
-      _isCropping = false;
+      _processTime = stopwatch.elapsedMilliseconds;
+      _processedBytes = cropped;
+      _isProcessing = false;
     });
 
     stopwatch.stop();
+  }
+
+  Future<void> _resizeToMax() async {
+    setState(() {
+      _processTime = null;
+      _isProcessing = true;
+    });
+
+    final stopwatch = Stopwatch()..start();
+    final resized = await FlutterImageUtils.resizeImageToMax(
+      _imgBytes,
+      maxSize: 200,
+      quality: _quality,
+      format: _format,
+    );
+
+    setState(() {
+      _processTime = stopwatch.elapsedMilliseconds;
+      _processedBytes = resized;
+      _isProcessing = false;
+    });
+
+    stopwatch.stop();
+  }
+
+  Future<void> _rotate() async {
+    setState(() {
+      _processTime = null;
+      _isProcessing = true;
+    });
+
+    final stopwatch = Stopwatch()..start();
+    final rotated = await FlutterImageUtils.rotateImage(
+      _imgBytes,
+      angle: 60,
+      quality: _quality,
+      format: _format,
+    );
+
+    setState(() {
+      _processTime = stopwatch.elapsedMilliseconds;
+      _processedBytes = rotated;
+      _isProcessing = false;
+    });
+
+    stopwatch.stop();
+  }
+
+  Widget _buildButton({String text, VoidCallback onPressed}) {
+    return FlatButton(
+      child: Text(
+        text,
+        style: TextStyle(color: Colors.white),
+      ),
+      color: Colors.blue,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18.0),
+      ),
+      onPressed: onPressed,
+    );
   }
 
   @override
@@ -116,33 +184,26 @@ class _MyAppState extends State<MyApp> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       Expanded(
-                        child: FlatButton(
-                          child: Text(
-                            'camera',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          color: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0),
-                          ),
+                        child: _buildButton(
+                          text: 'camera',
                           onPressed: () => _pickImage(ImageSource.camera),
                         ),
                       ),
                       Container(width: 16.0),
                       Expanded(
-                        child: FlatButton(
-                          child: Text(
-                            'photo lib',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          color: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0),
-                          ),
+                        child: _buildButton(
+                          text: 'photo lib',
                           onPressed: () => _pickImage(ImageSource.gallery),
                         ),
                       ),
                     ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(top: 32.0, bottom: 8.0),
+                    child: Text(
+                      'cropping options:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Row(
                     children: <Widget>[
@@ -228,23 +289,61 @@ class _MyAppState extends State<MyApp> {
                           min: 0,
                           max: 100,
                           divisions: 100 == 0 ? 1 : 100,
-                          onChanged: (v) => setState(() => _quality = v.toInt()),
+                          onChanged: (v) =>
+                              setState(() => _quality = v.toInt()),
                         ),
                         flex: 3,
                       )
                     ],
                   ),
-                  FlatButton(
-                    child: Text(
-                      'crop',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    color: Colors.blue,
-                    disabledColor: Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                    ),
-                    onPressed: _isCropping || _imgBytes == null ? null : () => _crop(),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text('format:'),
+                        flex: 1,
+                      ),
+                      Expanded(
+                        child: Row(
+                          children: <Widget>[
+                            Spacer(),
+                            Radio(
+                              value: FlutterImageUtils.jpeg,
+                              groupValue: _format,
+                              onChanged: (f) => setState(() => _format = f),
+                            ),
+                            Text('jpeg'),
+                            Spacer(),
+                            Radio(
+                              value: FlutterImageUtils.png,
+                              groupValue: _format,
+                              onChanged: (f) => setState(() => _format = f),
+                            ),
+                            Text('png'),
+                            Spacer(),
+                          ],
+                        ),
+                        flex: 3,
+                      )
+                    ],
+                  ),
+                  _buildButton(
+                    text: 'crop',
+                    onPressed: _isProcessing || _imgBytes == null
+                        ? null
+                        : () => _crop(),
+                  ),
+                  Container(height: 32.0),
+                  _buildButton(
+                    text: 'rotate',
+                    onPressed: _isProcessing || _imgBytes == null
+                        ? null
+                        : () => _rotate(),
+                  ),
+                  _buildButton(
+                    text: 'resize to max',
+                    onPressed: _isProcessing || _imgBytes == null
+                        ? null
+                        : () => _resizeToMax(),
                   ),
                   _imgBytes != null
                       ? Container(
@@ -254,15 +353,15 @@ class _MyAppState extends State<MyApp> {
                             child: Container(
                               color: Colors.orange,
                               child: Image(
-                                image: MemoryImage(_croppedBytes),
+                                image: MemoryImage(_processedBytes),
                               ),
                             ),
                           ),
                         )
                       : Container(),
-                  _cropTime != null
+                  _processTime != null
                       ? Container(
-                          child: Text('time elapsed: ${_cropTime}ms'),
+                          child: Text('time elapsed: ${_processTime}ms'),
                           margin: const EdgeInsets.only(top: 16.0),
                         )
                       : Container(),

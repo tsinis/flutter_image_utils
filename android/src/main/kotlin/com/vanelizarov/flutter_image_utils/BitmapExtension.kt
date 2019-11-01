@@ -84,9 +84,13 @@ fun Bitmap.resizeToMax(maxSize: Int, angle: Int): Bitmap {
             .rotate(angle)
 }
 
-fun Bitmap.toByteArray(quality: Int): ByteArray {
+fun Bitmap.toByteArray(quality: Int, format: Int): ByteArray {
     val stream = ByteArrayOutputStream()
-    this.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+    if (format == 0) { // jpeg
+        this.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+    } else { // png
+        this.compress(Bitmap.CompressFormat.PNG, quality, stream)
+    }
     return stream.toByteArray()
 }
 
